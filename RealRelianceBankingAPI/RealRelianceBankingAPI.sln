@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34309.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealRelianceBankingAPI", "RealRelianceBankingAPI.csproj", "{740ABB27-AC17-49D0-8C88-137A9755FF03}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RealRelianceBanking.Applicaton", "RealRelianceBanking.Applicaton", "{13332028-DBBA-4D03-9980-AE3D35AF2DCF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RealRelianceBanking.Domain", "RealRelianceBanking.Domain", "{25C75888-6310-4D06-936E-7B27C0EA8A0B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RealRelianceBanking.Infustructure", "RealRelianceBanking.Infustructure", "{60992F41-D537-4E92-9297-135B1D10DCC0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealRelianceBanking.Domain", "..\RealRelianceBanking.Domain\RealRelianceBanking.Domain.csproj", "{F3C0095A-4C28-4A54-BF01-8F696FDFB2FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealRelianceBanking.Infrastructure", "..\RealRelianceBanking.Infrastructure\RealRelianceBanking.Infrastructure.csproj", "{DCB71C8A-BAED-48DA-96E2-F2E446A51E72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealRelianceBanking.Application", "..\RealRelianceBanking.Application\RealRelianceBanking.Application.csproj", "{EF3531F9-196C-4224-8295-E457C377DB20}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{740ABB27-AC17-49D0-8C88-137A9755FF03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{740ABB27-AC17-49D0-8C88-137A9755FF03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{740ABB27-AC17-49D0-8C88-137A9755FF03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{740ABB27-AC17-49D0-8C88-137A9755FF03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3C0095A-4C28-4A54-BF01-8F696FDFB2FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3C0095A-4C28-4A54-BF01-8F696FDFB2FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3C0095A-4C28-4A54-BF01-8F696FDFB2FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3C0095A-4C28-4A54-BF01-8F696FDFB2FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCB71C8A-BAED-48DA-96E2-F2E446A51E72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCB71C8A-BAED-48DA-96E2-F2E446A51E72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCB71C8A-BAED-48DA-96E2-F2E446A51E72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCB71C8A-BAED-48DA-96E2-F2E446A51E72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF3531F9-196C-4224-8295-E457C377DB20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF3531F9-196C-4224-8295-E457C377DB20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF3531F9-196C-4224-8295-E457C377DB20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF3531F9-196C-4224-8295-E457C377DB20}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F3C0095A-4C28-4A54-BF01-8F696FDFB2FC} = {25C75888-6310-4D06-936E-7B27C0EA8A0B}
+		{DCB71C8A-BAED-48DA-96E2-F2E446A51E72} = {60992F41-D537-4E92-9297-135B1D10DCC0}
+		{EF3531F9-196C-4224-8295-E457C377DB20} = {13332028-DBBA-4D03-9980-AE3D35AF2DCF}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {506617D0-13E0-4208-8879-C03B70B07BFD}
+	EndGlobalSection
+EndGlobal
