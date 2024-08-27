@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using System.IdentityModel.Tokens
+using System.IdentityModel.Tokens;
 
 
 using System.IdentityModel.Tokens.Jwt;
