@@ -1,6 +1,8 @@
-﻿using RealRelianceBanking.Application.Common.Interfaces.Persistance;
+﻿using Dapper;
+using RealRelianceBanking.Application.Common.Interfaces.Persistance;
 using RealRelianceBanking.Domain.Aggregates;
 using RealRelianceBanking.Domain.Entities;
+using RealRelianceBanking.Infrastructure.DBContext;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,51 +11,173 @@ using System.Threading.Tasks;
 
 namespace RealRelianceBanking.Infrastructure.Persistance
 {
-    public class AccountRepository : IAccountRepository
+    public class AccountsRepository : IAccountRepository
     {
-        Task IAccountRepository.Add(Account account)
+        private readonly DapperContext _context;
+
+        public AccountsRepository(DapperContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
         }
 
-        Task<bool> IAccountRepository.CloseAccount(Guid accountId)
+        public async Task<Guid> CreateAccount(Account account)
         {
-            throw new NotImplementedException();
+            using (var db = _context.CreateConnection())
+            {
+                var sql = @"
+                INSERT INTO Account (
+                    AccountId, PersonId, AccountNumber, AccountType, Balance, IsClosed, ActiveInd
+                ) VALUES (
+                    @AccountId, @PersonId, @AccountNumber, @AccountType, @Balance, @IsClosed, @ActiveInd
+                )";
+
+                var parameters = new
+                {
+                    account.AccountID,
+                    account.PersonID,
+                    account.AccountNumber,
+                    account.AccountType,
+                    account.Balance,
+                    IsClosed = account.Status,
+                    account.ActiveInd
+                };
+
+                await db.ExecuteAsync(sql, parameters);
+                return account.AccountID;
+            }
+        }
+        public async Task<List<Account>> GetAccountsByPersonId(Guid personId)
+        {
+            using (var _dbConnection = _context.CreateConnection())
+            {
+                try
+                {
+                    var sql = "SELECT * FROM Account WHERE PersonId = @PersonId";
+                    var accounts = await _dbConnection.QueryAsync<Account>(sql, new { PersonId = personId });
+                    return accounts.ToList();
+                }
+                catch (Exception)
+                {
+                    return new List<Account>();
+                }
+            }
+
         }
 
-        Task<Guid> IAccountRepository.CreateAccount(Account account)
+        public async Task Add(Account account)
         {
-            throw new NotImplementedException();
+
+            using (var _dbConnection = _context.CreateConnection())
+            {
+                try
+                {
+                    var sql = "INSERT INTO Account (AccountId, PersonId, AccountNumber, AccountType, Balance, IsClosed, ActiveInd, CreatedBy, CreatedDate) VALUES (@AccountId, @PersonId, @AccountNumber, @AccountType, @Balance, @IsClosed, @ActiveInd, @CreatedBy, @CreatedDate)";
+                    await _dbConnection.ExecuteAsync(sql, account);
+                }
+                catch (Exception ex)
+                {
+                    new Exception();
+                }
+            }
+
+        }
+        public async Task Delete(Guid accountId)
+        {
+
+            using (var _dbConnection = _context.CreateConnection())
+            {
+                try
+                {
+                    var sql = "UPDATE Account SET activeInd = 0 WHERE AccountId = @AccountId";
+                    await _dbConnection.ExecuteAsync(sql, new { AccountId = accountId });
+                }
+                catch (Exception ex)
+                {
+                    new Exception();
+                }
+            }
+
         }
 
-        Task IAccountRepository.Delete(Guid accountId)
+        public async Task<Account> GetAccountById(Guid accountId)
         {
-            throw new NotImplementedException();
+
+            using (var _dbConnection = _context.CreateConnection())
+            {
+                try
+                {
+                    var sql = "SELECT * FROM Account WHERE AccountId = @AccountId";
+                    return await _dbConnection.QuerySingleOrDefaultAsync<Account>(sql, new { AccountId = accountId });
+                }
+                catch (Exception ex)
+                {
+                    return new Account();
+                }
+            }
+        }
+        public async Task UpdateAccountAsync(Account account)
+        {
+
+            using (var _dbConnection = _context.CreateConnection())
+            {
+                try
+                {
+                    var sql = "UPDATE Account SET Balance = @Balance  WHERE AccountId = @AccountId";
+                    await _dbConnection.QuerySingleOrDefaultAsync<Account>(sql, new { account.Balance, account.AccountID });
+                }
+                catch (Exception ex)
+                {
+                }
+            }
         }
 
-        Task<Account> IAccountRepository.GetAccountById(Guid accountId)
+        public async Task<List<AccountAggregate>> GetAccounts(bool activeOnly)
         {
-            throw new NotImplementedException();
+            using (var _dbConnection = _context.CreateConnection())
+            {
+                try
+                {
+                    var sql = @"SELECT * FROM Account WHERE 1=1";
+                    if (activeOnly)
+                    {
+                        sql += " AND ActiveInd = 1 AND IsClosed = 0";
+                    }
+
+                    var accounts = await _dbConnection.QueryAsync<AccountAggregate>(sql);
+                    return accounts.ToList();
+                }
+                catch (Exception ex)
+                {
+                    return new List<AccountAggregate>();
+                }
+            }
         }
 
-        Task<List<AccountAggregate>> IAccountRepository.GetAccounts(bool activeOnly)
+        public async Task<Account> GetByAccountNumber(string accountNumber)
         {
-            throw new NotImplementedException();
+            using (var db = _context.CreateConnection())
+            {
+                var sql = "SELECT * FROM Account WHERE AccountNumber = @AccountNumber";
+                var parameters = new { AccountNumber = accountNumber };
+
+                return await db.QuerySingleOrDefaultAsync<Account>(sql, parameters);
+            }
         }
 
-        Task<List<Account>> IAccountRepository.GetAccountsByPersonId(Guid personId)
+        public async Task<bool> CloseAccount(Guid accountId)
         {
-            throw new NotImplementedException();
-        }
+            using (var db = _context.CreateConnection())
+            {
+                var sql = @"
+                UPDATE Account 
+                SET IsClosed = 1, ActiveInd = 0 
+                WHERE AccountId = @AccountId";
 
-        Task<Account> IAccountRepository.GetByAccountNumber(string accountNumber)
-        {
-            throw new NotImplementedException();
-        }
+                var parameters = new { AccountId = accountId };
 
-        Task IAccountRepository.UpdateAccountAsync(Account account)
-        {
-            throw new NotImplementedException();
+                var affectedRows = await db.ExecuteAsync(sql, parameters);
+                return affectedRows > 0;
+            }
         }
     }
 }

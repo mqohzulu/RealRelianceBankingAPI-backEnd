@@ -32,10 +32,10 @@ namespace RealRelianceBanking.Infrastructure
         }
         public static IServiceCollection AddPersistence(this IServiceCollection services)
         {
-            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IPersonRepository, PersonRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ITransactionRepository, TransactionsRepository>();
-            services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddScoped<IAccountRepository, AccountsRepository>();
 
             return services;
         }

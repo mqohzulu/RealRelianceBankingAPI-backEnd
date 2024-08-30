@@ -7,11 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Authentication\" />
-    <Folder Include="Common\Errors\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="MediatR" Version="11.1.0" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
@@ -21,6 +16,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RealRelianceBanking.Domain\RealRelianceBanking.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Accounts\Common\" />
+    <Folder Include="Person\Common\" />
+    <Folder Include="Transactions\Common\" />
   </ItemGroup>
 
 </Project>

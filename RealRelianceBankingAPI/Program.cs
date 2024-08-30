@@ -16,7 +16,6 @@ builder.Services
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddControllers();
-
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
@@ -26,8 +25,9 @@ builder.Services.AddSwaggerGen(options =>
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey
     });
-
     options.OperationFilter<SecurityRequirementsOperationFilter>();
+    options.CustomSchemaIds(type => type.FullName);
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "RealRelianceBanking API", Version = "v1" });
 });
 
 builder.Services.AddCors(options =>
@@ -44,24 +44,41 @@ builder.Services.AddCors(options =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger(c =>
+    {
+        c.SerializeAsV2 = true;
+    });
     app.UseSwaggerUI(c =>
     {
-
         c.DefaultModelsExpandDepth(-1); // Disable swagger schemas at bottom
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "RealRelianceBanking");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "RealRelianceBanking API v1");
     });
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
 
-app.UseExceptionHandler("/error");
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "text/plain";
+        var errorFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+        if (errorFeature != null)
+        {
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogError($"Unhandled exception: {errorFeature.Error}");
+            await context.Response.WriteAsync("An unhandled exception occurred; see the server logs for more details.");
+        }
+    });
+});
 app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
 app.UseRouting();
