@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RealRelianceBanking.Application.Person.Command.CreatePerson;
 using RealRelianceBanking.Application.Person.Command.DeletePerson;
@@ -11,7 +12,7 @@ namespace RealRelianceBankingAPI.Controllers.Person
 {
     [Route("api/[controller]")]
     [ApiController]
-
+    [Authorize]
     public class PersonsController : ControllerBase
     {
         private readonly ISender _mediator;

@@ -6,11 +6,16 @@ using RealRelianceBanking.Application.Accounts.Commands.DeleteAccount;
 using RealRelianceBanking.Application.Accounts.Queries.GetAccounts;
 using RealRelianceBanking.Application.Accounts.Commands.AddAccount;
 using RealRelianceBanking.Application.Accounts.Commands.CloseAccountCommand;
+using Microsoft.AspNetCore.Authorization;
+using RealRelianceBanking.Application.Accounts.Queries.GetAccountsByPersonId;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace RealRelianceBankingAPI.Controllers.Account
 {
+
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AccountsController : ControllerBase
     {
         private readonly ISender _mediator;
@@ -22,7 +27,7 @@ namespace RealRelianceBankingAPI.Controllers.Account
         [HttpGet("GetAccountsByPersonId")]
         public async Task<IActionResult> GetAccountsByPersonId([FromQuery] Guid personId)
         {
-            var accounts = await _mediator.Send(new GetAccountTransactionsQuery(personId));
+            var accounts = await _mediator.Send(new GetAccountsByPersonIdQuery(personId));
             return Ok(accounts);
         }
 
