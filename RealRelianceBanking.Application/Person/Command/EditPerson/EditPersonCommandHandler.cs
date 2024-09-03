@@ -19,22 +19,22 @@ namespace RealRelianceBanking.Application.Person.Command.EditPerson
 
         public async Task<bool> Handle(EditPersonCommand request, CancellationToken cancellationToken)
         {
-            var existingPerson = await _personRepository.GetPersonById(request.Person.PersonID);
+            var existingPerson = await _personRepository.GetPersonById(request.personId);
             if (existingPerson == null)
             {
                 throw new Exception($"Person was not found.");
             }
 
-            if (existingPerson.IdNumber != request.Person.IdNumber)
+            if (existingPerson.IdNumber != request.IdNumber)
             {
-                var personWithSameIdNumber = await _personRepository.GetByIdNumber(request.Person.IdNumber);
-                if (personWithSameIdNumber != null && personWithSameIdNumber.PersonID != request.Person.PersonID)
+                var personWithSameIdNumber = await _personRepository.GetByIdNumber(request.IdNumber);
+                if (personWithSameIdNumber != null && personWithSameIdNumber.IdNumber != request.IdNumber)
                 {
                     throw new InvalidOperationException("A person with this ID Number already exists.");
                 }
             }
 
-            return await _personRepository.Update(request.Person);
+            return await _personRepository.Update(request);
         }
     }
 }

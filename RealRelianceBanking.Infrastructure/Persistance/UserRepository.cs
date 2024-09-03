@@ -26,15 +26,15 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                 DynamicParameters parameters = new DynamicParameters();
                 parameters.Add("@UserId", user.Id);
                 parameters.Add("@Email", user.Email);
-                parameters.Add("@FirstName", user.Email);
-                parameters.Add("@Email", user.Email);
-                parameters.Add("@LastName", user.password);
+                parameters.Add("@FirstName", user.FirstName);
+                parameters.Add("@LastName", user.LastName);
+                parameters.Add("@Password", user.password);
                 parameters.Add("@Role", user.Role);
 
-                string sql = @"INSERT INTO Users (UserId,FirstName, LastName, Email, Password, Role)
-                   VALUES (@UserId, @Email, @Password, @Role);";
+                string sql = @"INSERT INTO Users (UserId,FirstName, LastName, Email, Password, Role,ActiveInd)
+                   VALUES (@UserId,@FirstName,@LastName, @Email, @Password, @Role,1);";
 
-                db.ExecuteScalar(sql, parameters);
+               await db.ExecuteAsync(sql, parameters);
             }
         }
 

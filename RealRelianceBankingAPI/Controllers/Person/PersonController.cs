@@ -1,8 +1,10 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RealRelianceBanking.Application.Person.Command.CreatePerson;
 using RealRelianceBanking.Application.Person.Command.DeletePerson;
 using RealRelianceBanking.Application.Person.Command.EditPerson;
+using RealRelianceBanking.Application.Person.Queries.GetPersonByEmail;
 using RealRelianceBanking.Application.Person.Queries.GetPersonById;
 using RealRelianceBanking.Application.Person.Queries.GetPersonByIdNumber;
 using RealRelianceBanking.Application.Person.Queries.GetPersons;
@@ -11,7 +13,7 @@ namespace RealRelianceBankingAPI.Controllers.Person
 {
     [Route("api/[controller]")]
     [ApiController]
-
+    [Authorize]
     public class PersonsController : ControllerBase
     {
         private readonly ISender _mediator;
@@ -41,13 +43,20 @@ namespace RealRelianceBankingAPI.Controllers.Person
         }
 
         [HttpDelete("DeletePerson")]
-        public async Task<IActionResult> DeletePerson([FromQuery] Guid personId)
+        public async Task<IActionResult> DeletePerson([FromQuery] DeletePersonCommand request)
         {
-            await _mediator.Send(new DeletePersonCommand(personId));
+            await _mediator.Send(request);
             return NoContent();
         }
         [HttpGet("GetPersonByIdNumberAccountCount")]
         public async Task<IActionResult> GetPersonGetPersonByIdNumberAccountCountByIdNumber([FromQuery] GetPersonDtoByIdNumberQuery query)
+        {
+            var person = await _mediator.Send(query);
+            return Ok(person);
+        }
+        
+        [HttpGet("GetPersonByEmail")]
+        public async Task<IActionResult> GetPersonByEmail([FromQuery] GetPersonByEmailQuery query)
         {
             var person = await _mediator.Send(query);
             return Ok(person);

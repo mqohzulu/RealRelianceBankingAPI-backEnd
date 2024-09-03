@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RealRelianceBanking.Domain.Entities
 {
-    public partial class Account
+    public class Account
     {
         public Guid AccountID { get; set; }
         public Guid PersonID { get; set; }

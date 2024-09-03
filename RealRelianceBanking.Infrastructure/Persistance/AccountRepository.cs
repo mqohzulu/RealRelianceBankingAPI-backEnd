@@ -179,5 +179,21 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                 return affectedRows > 0;
             }
         }
+        public async Task<bool> AccountExistsAsync(Guid accountId)
+        {
+            using (var dbConnection = _context.CreateConnection())
+            {
+                try
+                {
+                    var sql = "SELECT COUNT(1) FROM Account WHERE AccountId = @AccountId";
+                    var count = await dbConnection.ExecuteScalarAsync<int>(sql, new { AccountId = accountId });
+                    return count > 0;
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
+            }
+        }
     }
 }

@@ -6,11 +6,16 @@ using RealRelianceBanking.Application.Accounts.Commands.DeleteAccount;
 using RealRelianceBanking.Application.Accounts.Queries.GetAccounts;
 using RealRelianceBanking.Application.Accounts.Commands.AddAccount;
 using RealRelianceBanking.Application.Accounts.Commands.CloseAccountCommand;
+using Microsoft.AspNetCore.Authorization;
+using RealRelianceBanking.Application.Accounts.Queries.GetAccountsByPersonId;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace RealRelianceBankingAPI.Controllers.Account
 {
+
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AccountsController : ControllerBase
     {
         private readonly ISender _mediator;
@@ -22,7 +27,7 @@ namespace RealRelianceBankingAPI.Controllers.Account
         [HttpGet("GetAccountsByPersonId")]
         public async Task<IActionResult> GetAccountsByPersonId([FromQuery] Guid personId)
         {
-            var accounts = await _mediator.Send(new GetAccountTransactionsQuery(personId));
+            var accounts = await _mediator.Send(new GetAccountsByPersonIdQuery(personId));
             return Ok(accounts);
         }
 
@@ -34,9 +39,9 @@ namespace RealRelianceBankingAPI.Controllers.Account
         }
 
         [HttpDelete("DeleteAccount")]
-        public async Task<IActionResult> DeleteAccount([FromQuery] Guid accountId)
+        public async Task<IActionResult> DeleteAccount([FromQuery] DeleteAccountCommand request)
         {
-            await _mediator.Send(new DeleteAccountCommand(accountId));
+            await _mediator.Send(new DeleteAccountCommand(request.AccountId));
             return NoContent();
         }
         [HttpGet("GetAccounts")]
@@ -60,11 +65,11 @@ namespace RealRelianceBankingAPI.Controllers.Account
             }
         }
         [HttpPost("CloseAccount")]
-        public async Task<IActionResult> CloseAccount([FromBody] Guid accountId)
+        public async Task<IActionResult> CloseAccount([FromBody] CloseAccountCommand request)
         {
             try
             {
-                var command = new CloseAccountCommand(accountId);
+                var command = new CloseAccountCommand(request.AccountId);
                 var result = await _mediator.Send(command);
 
                 if (result)

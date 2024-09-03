@@ -5,12 +5,13 @@ using RealRelianceBanking.Application.Transactions.Queries.GetTransactions;
 using RealRelianceBanking.Application.Transactions.Queries;
 using RealRelianceBanking.Contracts.Transactions.Transafer.TransferFundsCommand;
 using RealRelianceBanking.Domain.Aggregates;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RealRelianceBankingAPI.Controllers.Transaction
 {
     [Route("api/[controller]")]
     [ApiController]
-
+    [Authorize]
     public class TransactionController : ControllerBase
     {
         private readonly ISender _mediator;

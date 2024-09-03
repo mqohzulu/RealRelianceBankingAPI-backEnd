@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using RealRelianceBanking.Application.Common.Interfaces.Persistance;
+using RealRelianceBanking.Application.Person.Command.EditPerson;
 using RealRelianceBanking.Domain.Aggregates;
 using RealRelianceBanking.Domain.Entities;
 using RealRelianceBanking.Infrastructure.DBContext;
@@ -92,22 +93,21 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                 }
             }
         }
-        public async Task<List<PersonModel?>> GetPersonByEmail(string email)
+        public async Task<PersonModel> GetPersonByEmail(string email)
         {
             using (var db = _context.CreateConnection())
             {
                 try
                 {
-                    var query = "SELECT * FROM Person WHERE Email = @email";
+                    var query = "SELECT TOP 1 * FROM Person WHERE Email = @email";
                     var parameters = new DynamicParameters();
                     parameters.Add("@email", email);
-
-                    var result = await db.QueryAsync<PersonModel>(query, parameters);
-                    return result.ToList();
+                    var result = await db.QuerySingleOrDefaultAsync<PersonModel>(query, parameters);
+                    return result ?? new PersonModel();
                 }
                 catch (Exception ex)
                 {
-                    return new List<PersonModel?>();
+                    return new PersonModel();
                 }
             }
         }
@@ -152,20 +152,23 @@ namespace RealRelianceBanking.Infrastructure.Persistance
 
         public async Task<bool> HasActiveAccounts(Guid personId)
         {
-
+            const string sql = @"
+                SELECT CASE WHEN EXISTS (
+                    SELECT 1 
+                    FROM Account 
+                    WHERE PersonId = @PersonId 
+                    AND IsClosed = 0
+                ) THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END";
 
             using (var db = _context.CreateConnection())
             {
                 try
                 {
-
-                    return await db.ExecuteScalarAsync<bool>(
-                    "SELECT COUNT(*) > 0 FROM Account WHERE PersonId = @PersonId AND IsClosed = 0",
-                    new { PersonId = personId });
+                    return await db.ExecuteScalarAsync<bool>(sql, new { PersonId = personId });
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception();
+                    throw;
                 }
             }
         }
@@ -191,7 +194,7 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                 }
             }
         }
-        public async Task<bool> Update(PersonModel person)
+        public async Task<bool> Update(EditPersonCommand person)
         {
             using (var db = _context.CreateConnection())
             {
@@ -204,11 +207,11 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                     ActiveInd = @ActiveInd, 
                     PhoneNumber = @PhoneNumber,
                     DateOfBirth = @DateOfBirth
-                WHERE PersonId = @PersonId";
+                WHERE PersonId = @personId";
 
                 var parameters = new
                 {
-                    person.PersonID,
+                    person.personId,
                     person.FirstName,
                     person.LastName,
                     person.IdNumber,

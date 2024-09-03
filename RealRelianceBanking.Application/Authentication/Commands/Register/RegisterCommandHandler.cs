@@ -27,20 +27,22 @@ namespace RealRelianceBanking.Application.Authentication.Commands.Register
         public async Task<AuthenticationResult> Handle(RegisterCommand command, CancellationToken cancellationToken)
         {
             //validate so that user doesn't exists
-            if (_userRepository.GetUserByEmail(command.Email) is not null)
+            if (await _userRepository.GetUserByEmail(command.Email) is not null)
             {
                 throw new DuplicateEmailException();
             }
 
             var user = new User
             {
+                Id = Guid.NewGuid(),
                 Email = command.Email,
                 password = command.Password,
-                Role = command.Role
-
+                FirstName = command.FirstName,
+                LastName = command.LastName,
+                Role = command.Role,
             };
 
-            _userRepository.Add(user);
+            await _userRepository.Add(user);
 
             var token = _jwtTokenGenerator.GenerateToken(user);
 

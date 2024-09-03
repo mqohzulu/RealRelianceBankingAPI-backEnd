@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RealRelianceBanking.Application.Person.Command.CreatePerson
 {
-    public record CreatePersonCommand(int IdNumber, string FirstName,
+    public record CreatePersonCommand(Guid personId,int IdNumber, string FirstName,
                                    string LastName, string Email,
                                    string PhoneNumber, bool ActiveInd,
                                    DateTime DateOfBirth) : IRequest<Guid>;
