@@ -30,26 +30,34 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
             // Validate input
             if (request.Amount <= 0)
             {
-                return new TransferFundsResult(false, "Transfer amount must be positive.");
+                return new TransferFundsResult(false, "Transfer amount must be positive and non-zero.");
             }
 
             // Fetch accounts and person information
             var accountFrom = await _accountRepository.GetByAccountNumber(request.AccountFrom);
             var accountTo = await _accountRepository.GetByAccountNumber(request.AccountTo);
 
-            if (accountFrom == null || accountTo == null)
+            if (!await _accountRepository.AccountExistsAsync(accountFrom.AccountID) ||
+                !await _accountRepository.AccountExistsAsync(accountTo.AccountID))
             {
-                return new TransferFundsResult(false, "One or both accounts do not exist.");
+                return new TransferFundsResult(false, "One or both accounts do not exist or were created after the transaction date.");
             }
 
             if (accountFrom.AccountID == accountTo.AccountID)
             {
                 return new TransferFundsResult(false, "Cannot transfer funds to the same account.");
             }
-            if (accountTo.Status ==true )
+
+            if (accountFrom.Status == true)
+            {
+                return new TransferFundsResult(false, "Cannot transfer funds from a closed account.");
+            }
+
+            if (accountTo.Status == true)
             {
                 return new TransferFundsResult(false, "Cannot transfer funds to a closed account.");
             }
+            
 
             var personTo = await _personRepository.GetPersonById(accountTo.PersonID);
             if (personTo == null)
@@ -61,9 +69,10 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
             {
                 return new TransferFundsResult(false, "Insufficient funds in the source account.");
             }
-
             try
             {
+                var currentDate = DateTime.UtcNow;
+
                 // Update account balances
                 accountFrom.Balance -= request.Amount;
                 accountTo.Balance += request.Amount;
@@ -77,7 +86,7 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
                     AccountId = accountFrom.AccountID,
                     Amount = -request.Amount,
                     TransactionType = "Debit",
-                    TransactionDate = DateTime.UtcNow,
+                    TransactionDate = currentDate,
                     Description = $"{request.description}\nTransfer to {accountTo.AccountNumber} owned by {personTo.FirstName} {personTo.LastName}"
                 };
 
@@ -87,13 +96,12 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
                     AccountId = accountTo.AccountID,
                     Amount = request.Amount,
                     TransactionType = "Credit",
-                    TransactionDate = DateTime.UtcNow,
+                    TransactionDate = currentDate,
                     Description = $"{request.description}\nTransfer from {accountFrom.AccountNumber}"
                 };
 
                 await _transactionRepository.AddTransaction(transactionFrom);
                 await _transactionRepository.AddTransaction(transactionTo);
-
 
                 return new TransferFundsResult(true, "Transfer successful.");
             }

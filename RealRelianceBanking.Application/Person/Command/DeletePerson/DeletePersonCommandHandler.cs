@@ -19,11 +19,9 @@ namespace RealRelianceBanking.Application.Person.Command.DeletePerson
 
         public async Task<Unit> Handle(DeletePersonCommand request, CancellationToken cancellationToken)
         {
-            var hasActiveAccounts = await _personRepository.HasActiveAccounts(request.PersonId);
-
-            if (hasActiveAccounts)
+            if (await _personRepository.HasActiveAccounts(request.PersonId))
             {
-                throw new ApplicationException("Cannot delete a person with active accounts.");
+                throw new ApplicationException("Cannot delete person with active accounts.");
             }
 
             await _personRepository.Deactivate(request.PersonId);

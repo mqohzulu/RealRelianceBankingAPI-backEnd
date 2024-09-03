@@ -1,4 +1,5 @@
-﻿using RealRelianceBanking.Domain.Aggregates;
+﻿using RealRelianceBanking.Application.Person.Command.EditPerson;
+using RealRelianceBanking.Domain.Aggregates;
 using RealRelianceBanking.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace RealRelianceBanking.Application.Common.Interfaces.Persistance
 
         Task<List<PersonModel>> GetPersons(bool activeOnly);
 
-        Task<List<PersonModel?>> GetPersonByEmail(string email);
+        Task<PersonModel> GetPersonByEmail(string email);
         Task Deactivate(Guid personId);
         Task<PersonModel> GetByIdNumberAsync(int IdNumber);
         Task<bool> HasActiveAccounts(Guid personId);
@@ -25,7 +26,7 @@ namespace RealRelianceBanking.Application.Common.Interfaces.Persistance
 
         Task<PersonModel> GetByIdNumber(int idNumber);
 
-        Task<bool> Update(PersonModel person);
+        Task<bool> Update(EditPersonCommand person);
 
     }
 }

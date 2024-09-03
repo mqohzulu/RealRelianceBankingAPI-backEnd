@@ -8,5 +8,8 @@ using System.Threading.Tasks;
 
 namespace RealRelianceBanking.Application.Person.Command.EditPerson
 {
-    public record EditPersonCommand(PersonModel Person) : IRequest<bool>;
+    public record EditPersonCommand(Guid personId, int IdNumber, string FirstName,
+                                   string LastName, string Email,
+                                   string PhoneNumber, bool ActiveInd,
+                                   DateTime DateOfBirth) : IRequest<bool>;
 }

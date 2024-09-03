@@ -22,5 +22,6 @@ namespace RealRelianceBanking.Application.Common.Interfaces.Persistance
 
         Task<Account> GetByAccountNumber(string accountNumber);
         Task<bool> CloseAccount(Guid accountId);
+        Task<bool> AccountExistsAsync(Guid accountId);
     }
 }

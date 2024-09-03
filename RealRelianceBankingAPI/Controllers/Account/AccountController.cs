@@ -39,9 +39,9 @@ namespace RealRelianceBankingAPI.Controllers.Account
         }
 
         [HttpDelete("DeleteAccount")]
-        public async Task<IActionResult> DeleteAccount([FromQuery] Guid accountId)
+        public async Task<IActionResult> DeleteAccount([FromQuery] DeleteAccountCommand request)
         {
-            await _mediator.Send(new DeleteAccountCommand(accountId));
+            await _mediator.Send(new DeleteAccountCommand(request.AccountId));
             return NoContent();
         }
         [HttpGet("GetAccounts")]
@@ -65,11 +65,11 @@ namespace RealRelianceBankingAPI.Controllers.Account
             }
         }
         [HttpPost("CloseAccount")]
-        public async Task<IActionResult> CloseAccount([FromBody] Guid accountId)
+        public async Task<IActionResult> CloseAccount([FromBody] CloseAccountCommand request)
         {
             try
             {
-                var command = new CloseAccountCommand(accountId);
+                var command = new CloseAccountCommand(request.AccountId);
                 var result = await _mediator.Send(command);
 
                 if (result)
