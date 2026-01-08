@@ -4,73 +4,105 @@ using Microsoft.OpenApi.Models;
 using RealRelianceBanking.Application;
 using RealRelianceBanking.Infrastructure;
 using RealRelianceBankingAPI;
-using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 builder.Services
     .AddPresentation()
     .AddApplication()
     .AddInfractracture(builder.Configuration);
-// Add services to the container.
+
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+
+if (!builder.Services.Any(x => x.ServiceType == typeof(Microsoft.AspNetCore.Authentication.IAuthenticationService)))
+{
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+}
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Description = "Standard Authorization header using the Bearer scheme (\"bearer {token}\")",
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey
+        Title = "RealReliance Bank API",
+        Version = "v1"
     });
-    options.OperationFilter<SecurityRequirementsOperationFilter>();
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "RealRelianceBanking API", Version = "v1" });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter JWT Token"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
 });
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
-         builder =>
-         {
-             builder.WithOrigins("https://localhost:4200", "http://localhost:4200")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
-         });
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
 });
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger(c =>
-    {
-        c.SerializeAsV2 = true;
-    });
+    app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.DefaultModelsExpandDepth(-1); // Disable swagger schemas at bottom
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "RealRelianceBanking API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "RealRelianceBank API v1");
+        c.DisplayRequestDuration();
     });
 }
 
-
-
 app.UseExceptionHandler("/error");
-app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
-app.UseRouting();
+app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllers();
-});
+
+app.MapControllers();
 app.Run();

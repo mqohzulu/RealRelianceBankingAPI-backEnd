@@ -28,7 +28,7 @@ namespace RealRelianceBanking.Infrastructure.Authentication
         {
             var signingCredentials = new SigningCredentials(
                  new SymmetricSecurityKey(
-                     Encoding.UTF8.GetBytes(_jwtSettings.Secret)),
+                     Encoding.UTF8.GetBytes(_jwtSettings.Key)),
                  SecurityAlgorithms.HmacSha256);
 
 

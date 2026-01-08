@@ -76,23 +76,55 @@ namespace RealRelianceBanking.Infrastructure.Persistance
         }
         public async Task<List<PersonModel>> GetPersons(bool activeOnly)
         {
-            using (var db = _context.CreateConnection())
-            {
-                try
-                {
-                    var query = "SELECT * FROM Person WHERE  (@activeOnly = 0 OR ActiveInd = @activeOnly) ";
-                    var parameters = new DynamicParameters();
-                    parameters.Add("@activeOnly", activeOnly);
+            using var db = _context.CreateConnection();
 
-                    var result = await db.QueryAsync<PersonModel>(query, parameters);
-                    return result.ToList();
-                }
-                catch (Exception ex)
+            var sql = @"
+                SELECT
+                    p.PersonID,
+                    p.FirstName,
+                    p.LastName,
+                    p.IdNumber,
+                    p.ActiveInd,
+                    p.Email,
+                    p.PhoneNumber,
+                    p.DateOfBirth,
+
+                    a.AccountId,
+                    a.PersonID,
+                    a.AccountNumber,
+                    a.ActiveInd
+                FROM Person p
+                LEFT JOIN Account a ON a.PersonID = p.PersonID
+                WHERE (@activeOnly = 0 OR p.ActiveInd = @activeOnly);
+            ";
+
+            var lookup = new Dictionary<Guid, PersonModel>();
+
+            var result = await db.QueryAsync<PersonModel, Account, PersonModel>(
+                sql,
+                (person, account) =>
                 {
-                    return new List<PersonModel>();
-                }
-            }
+                    if (!lookup.TryGetValue(person.PersonID, out var existingPerson))
+                    {
+                        existingPerson = person;
+                        existingPerson.Accounts = new List<Account>();
+                        lookup.Add(existingPerson.PersonID, existingPerson);
+                    }
+
+                    if (account != null)
+                    {
+                        existingPerson.Accounts.Add(account);
+                    }
+
+                    return existingPerson;
+                },
+                new { activeOnly },
+                splitOn: "AccountId"
+            );
+
+            return lookup.Values.ToList();
         }
+
         public async Task<PersonModel> GetPersonByEmail(string email)
         {
             using (var db = _context.CreateConnection())

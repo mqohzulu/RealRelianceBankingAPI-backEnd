@@ -16,7 +16,7 @@ namespace RealRelianceBanking.Domain.Entities
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
         public DateTime? DateOfBirth { get; set; }
+        public List<Account> Accounts { get; set; } = new();
 
-        public List<Account> Accounts = new List<Account>();
     }
 }
