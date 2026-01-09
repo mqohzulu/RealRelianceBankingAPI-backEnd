@@ -16,5 +16,6 @@ namespace RealRelianceBanking.Application.Common.Interfaces.Persistance
         Task AddTransaction(TransactionsModel transaction);
         Task<IEnumerable<TransactionAggregate>> GetTransactionsAsync(bool activeOnly);
         Task<TransactionAggregate> GetDetailsByIdAsync(Guid id);
+        Task UpdateTransaction(TransactionsModel transaction);
     }
 }

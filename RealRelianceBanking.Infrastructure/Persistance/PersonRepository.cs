@@ -61,18 +61,53 @@ namespace RealRelianceBanking.Infrastructure.Persistance
         }
         public async Task<PersonModel> GetPersonById(Guid id)
         {
-            using (var db = _context.CreateConnection())
-            {
-                try
+            using var db = _context.CreateConnection();
+
+            var sql = @"
+                SELECT
+                    p.PersonID,
+                    p.FirstName,
+                    p.LastName,
+                    p.IdNumber,
+                    p.ActiveInd,
+                    p.Email,
+                    p.PhoneNumber,
+                    p.DateOfBirth,
+            
+                    a.AccountId,
+                    a.PersonID,
+                    a.AccountNumber,
+                    a.IsClosed as Status,
+                    a.ActiveInd
+                FROM Person p
+                LEFT JOIN Account a ON a.PersonID = p.PersonID
+                WHERE p.PersonID = @Id;
+            ";
+
+            PersonModel person = null;
+
+            var result = await db.QueryAsync<PersonModel, Account, PersonModel>(
+                sql,
+                (p, account) =>
                 {
-                    var sql = "SELECT * FROM Person WHERE PersonId = @Id";
-                    return await db.QuerySingleOrDefaultAsync<PersonModel>(sql, new { Id = id });
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-            }
+                    if (person == null)
+                    {
+                        person = p;
+                        person.Accounts = new List<Account>();
+                    }
+
+                    if (account != null)
+                    {
+                        person.Accounts.Add(account);
+                    }
+
+                    return person;
+                },
+                new { Id = id },
+                splitOn: "AccountId"
+            );
+
+            return person;
         }
         public async Task<List<PersonModel>> GetPersons(bool activeOnly)
         {
@@ -92,6 +127,7 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                     a.AccountId,
                     a.PersonID,
                     a.AccountNumber,
+                    a.IsClosed as Status,
                     a.ActiveInd
                 FROM Person p
                 LEFT JOIN Account a ON a.PersonID = p.PersonID

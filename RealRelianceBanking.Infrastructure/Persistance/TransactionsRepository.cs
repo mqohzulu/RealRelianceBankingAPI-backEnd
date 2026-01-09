@@ -125,5 +125,26 @@ namespace RealRelianceBanking.Infrastructure.Persistance
             return transaction;
         }
 
+        public async Task UpdateTransaction(TransactionsModel transaction)
+        {
+            using var db = _context.CreateConnection();
+
+            var sql = @"
+                UPDATE Transactions 
+                SET Amount = @Amount,
+                    TransactionType = @TransactionType,
+                    TransactionDate = @TransactionDate,
+                    Description = @Description
+                WHERE TransactionId = @TransactionId";
+
+            await db.ExecuteAsync(sql, new
+            {
+                transaction.TransactionId,
+                transaction.Amount,
+                transaction.TransactionType,
+                transaction.TransactionDate,
+                transaction.Description
+            });
+        }
     }
 }

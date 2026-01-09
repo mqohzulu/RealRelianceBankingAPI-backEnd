@@ -195,5 +195,28 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                 }
             }
         }
+
+        public async Task<bool> HasActiveAccounts(Guid personId)
+        {
+            using (var db = _context.CreateConnection())
+            {
+                try
+                {
+                    var sql = @"
+                SELECT COUNT(1) 
+                FROM Account 
+                WHERE PersonId = @PersonId 
+                AND IsClosed = 0 
+                AND ActiveInd = 1";
+
+                    var count = await db.ExecuteScalarAsync<int>(sql, new { PersonId = personId });
+                    return count > 0;
+                }
+                catch (Exception ex)
+                {
+                    return true; 
+                }
+            }
+        }
     }
 }

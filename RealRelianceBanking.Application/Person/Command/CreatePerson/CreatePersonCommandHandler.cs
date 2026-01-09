@@ -1,15 +1,10 @@
 ﻿using MediatR;
 using RealRelianceBanking.Application.Common.Interfaces.Persistance;
 using RealRelianceBanking.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RealRelianceBanking.Application.Person.Command.CreatePerson
 {
-    public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, Guid>
+    public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, CreatePersonResponse>
     {
         private readonly IPersonRepository _personRepository;
 
@@ -18,13 +13,16 @@ namespace RealRelianceBanking.Application.Person.Command.CreatePerson
             _personRepository = personRepository;
         }
 
-        public async Task<Guid> Handle(CreatePersonCommand request, CancellationToken cancellationToken)
+        public async Task<CreatePersonResponse> Handle(CreatePersonCommand request, CancellationToken cancellationToken)
         {
             var existingPerson = await _personRepository.GetByIdNumberAsync(request.IdNumber);
 
             if (existingPerson != null)
             {
-                throw new ApplicationException("A person with the same ID Number already exists.");
+                return new CreatePersonResponse(
+                    Success: false,
+                    ErrorMessage: $"A person with ID Number {request.IdNumber} already exists."
+                );
             }
 
             var person = new PersonModel
@@ -39,7 +37,11 @@ namespace RealRelianceBanking.Application.Person.Command.CreatePerson
                 ActiveInd = true
             };
 
-            return await _personRepository.Add(person);
+            var personId = await _personRepository.Add(person);
+            return new CreatePersonResponse(
+                Success: true,
+                PersonId: personId
+            );
         }
     }
 }

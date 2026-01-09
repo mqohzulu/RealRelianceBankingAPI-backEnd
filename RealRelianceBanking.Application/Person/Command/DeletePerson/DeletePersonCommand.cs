@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace RealRelianceBanking.Application.Person.Command.DeletePerson
 {
-    public record DeletePersonCommand(Guid PersonId) : IRequest;
+    public record DeletePersonCommand(int IdNumber) : IRequest<DeletePersonResult>;
+
+    public record DeletePersonResult(bool Success, string Message);
 
 }
