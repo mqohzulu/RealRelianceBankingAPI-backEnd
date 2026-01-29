@@ -7,6 +7,7 @@ using Xunit;
 using RealRelianceBanking.Contracts.Transactions.Transafer.TransferFundsCommand;
 using RealRelianceBanking.Application.Transactions.Command.Transafer;
 using RealRelianceBanking.Domain.Aggregates;
+using RealRelianceBanking.Application.Common.Interfaces.Services;
 namespace Tests.Commands.TransatioinsTests
 {
     public class TransferCommandHandlerTests
@@ -14,6 +15,7 @@ namespace Tests.Commands.TransatioinsTests
         private readonly Mock<IAccountRepository> _mockAccountRepository;
         private readonly Mock<ITransactionRepository> _mockTransactionRepository;
         private readonly Mock<IPersonRepository> _mockPersonRepository;
+        private readonly Mock<IDateTimeProvider> _mockDateTimeProvider;
         private readonly TransferFundsCommandHandler _handler;
 
         public TransferCommandHandlerTests()
@@ -21,7 +23,13 @@ namespace Tests.Commands.TransatioinsTests
             _mockAccountRepository = new Mock<IAccountRepository>();
             _mockTransactionRepository = new Mock<ITransactionRepository>();
             _mockPersonRepository = new Mock<IPersonRepository>();
-            _handler = new TransferFundsCommandHandler(_mockAccountRepository.Object, _mockTransactionRepository.Object, _mockPersonRepository.Object);
+            _mockDateTimeProvider = new Mock<IDateTimeProvider>();
+            _mockDateTimeProvider.Setup(provider => provider.UtcNow).Returns(DateTime.UtcNow);
+            _handler = new TransferFundsCommandHandler(
+                _mockAccountRepository.Object,
+                _mockTransactionRepository.Object,
+                _mockPersonRepository.Object,
+                _mockDateTimeProvider.Object);
         }
 
         [Fact]

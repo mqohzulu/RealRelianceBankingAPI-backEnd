@@ -8,6 +8,7 @@ using RealRelianceBanking.Application.Person.Queries.GetPersonByEmail;
 using RealRelianceBanking.Application.Person.Queries.GetPersonById;
 using RealRelianceBanking.Application.Person.Queries.GetPersonByIdNumber;
 using RealRelianceBanking.Application.Person.Queries.GetPersons;
+using RealRelianceBanking.Application.Person.Queries.SearchPersons;
 
 namespace RealRelianceBankingAPI.Controllers.Person
 {
@@ -60,6 +61,13 @@ namespace RealRelianceBankingAPI.Controllers.Person
         {
             var person = await _mediator.Send(query);
             return Ok(person);
+        }
+
+        [HttpGet("Search")]
+        public async Task<IActionResult> SearchPersons([FromQuery] int? idNumber, [FromQuery] string? lastName, [FromQuery] string? accountNumber)
+        {
+            var results = await _mediator.Send(new SearchPersonsQuery(idNumber, lastName, accountNumber));
+            return Ok(results);
         }
 
         [HttpPut]
