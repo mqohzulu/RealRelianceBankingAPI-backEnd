@@ -10,6 +10,9 @@
 *.userosscache
 *.sln.docstates
 
+# Local command prompt notes
+command-prompts.txt
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
