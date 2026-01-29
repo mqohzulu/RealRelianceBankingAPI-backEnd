@@ -1,9 +1,8 @@
-﻿using MediatR;
+using MediatR;
 using RealRelianceBanking.Application.Common.Interfaces.Persistance;
+using RealRelianceBanking.Application.Common.Interfaces.Services;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RealRelianceBanking.Application.Transactions.Command.Update
@@ -12,13 +11,16 @@ namespace RealRelianceBanking.Application.Transactions.Command.Update
     {
         private readonly ITransactionRepository _transactionRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         public UpdateTransactionCommandHandler(
             ITransactionRepository transactionRepository,
-            IAccountRepository accountRepository)
+            IAccountRepository accountRepository,
+            IDateTimeProvider dateTimeProvider)
         {
             _transactionRepository = transactionRepository;
             _accountRepository = accountRepository;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<UpdateTransactionResult> Handle(UpdateTransactionCommand request, CancellationToken cancellationToken)
@@ -28,7 +30,7 @@ namespace RealRelianceBanking.Application.Transactions.Command.Update
                 return new UpdateTransactionResult(false, "Transaction amount cannot be zero.");
             }
 
-            if (request.TransactionDate > DateTime.UtcNow)
+            if (request.TransactionDate > _dateTimeProvider.UtcNow)
             {
                 return new UpdateTransactionResult(false, "Transaction date cannot be in the future.");
             }
@@ -45,7 +47,7 @@ namespace RealRelianceBanking.Application.Transactions.Command.Update
                 return new UpdateTransactionResult(false, "Account not found.");
             }
 
-            if (account.Status == true)
+            if (account.Status)
             {
                 return new UpdateTransactionResult(false, "Cannot update transactions for a closed account.");
             }
@@ -61,12 +63,13 @@ namespace RealRelianceBanking.Application.Transactions.Command.Update
                 existingTransaction.Description = request.Description;
                 existingTransaction.TransactionType = request.TransactionType;
                 existingTransaction.TransactionDate = request.TransactionDate;
+                existingTransaction.CaptureDate = _dateTimeProvider.UtcNow;
 
                 await _transactionRepository.UpdateTransaction(existingTransaction);
 
                 return new UpdateTransactionResult(true, "Transaction updated successfully.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new UpdateTransactionResult(false, "Failed to update transaction. Please try again later.");
             }

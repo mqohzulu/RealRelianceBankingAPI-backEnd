@@ -28,6 +28,7 @@ CREATE TABLE Transactions (
     Amount DECIMAL(18, 2) NOT NULL,
     TransactionType VARCHAR(10) NOT NULL CHECK (TransactionType IN ('Debit', 'Credit')),
     TransactionDate DATETIME NOT NULL,
+    CaptureDate DATETIME NOT NULL,
     Description NVARCHAR(255),
     ActiveInd BIT NOT NULL,
     FOREIGN KEY (AccountId) REFERENCES Account(AccountId)
@@ -61,11 +62,11 @@ VALUES
     ('C11B7553-085C-4126-A128-F083E887A087', '23C43FE1-0B33-4530-B045-47B4CFEF230D', 'ACC3456789012', 'Checking', 500.75, 1, 0);
 
 	-- Insert test data into the Transactions table
-INSERT INTO Transactions (TransactionId, AccountId, Amount, TransactionType, TransactionDate, Description, ActiveInd)
+INSERT INTO Transactions (TransactionId, AccountId, Amount, TransactionType, TransactionDate, CaptureDate, Description, ActiveInd)
 VALUES
-    (NEWID(), 'D0300D5A-52FE-4B02-8844-78E9CC69769A', 100.00, 'Credit', '2024-07-01', 'Initial deposit', 1),
-    (NEWID(), 'D9771B65-BCE2-47C7-B611-A0C30FEDCF68', 50.75, 'Debit', '2024-07-02', 'Grocery shopping', 1),
-    (NEWID(), 'C11B7553-085C-4126-A128-F083E887A087', 200.00, 'Credit', '2024-07-03', 'Salary', 1);
+    (NEWID(), 'D0300D5A-52FE-4B02-8844-78E9CC69769A', 100.00, 'Credit', '2024-07-01', '2024-07-01', 'Initial deposit', 1),
+    (NEWID(), 'D9771B65-BCE2-47C7-B611-A0C30FEDCF68', 50.75, 'Debit', '2024-07-02', '2024-07-02', 'Grocery shopping', 1),
+    (NEWID(), 'C11B7553-085C-4126-A128-F083E887A087', 200.00, 'Credit', '2024-07-03', '2024-07-03', 'Salary', 1);
 
 -- Insert test data into Users Table
 	INSERT INTO Users (UserId, FirstName, LastName, Email, password,Role, ActiveInd)

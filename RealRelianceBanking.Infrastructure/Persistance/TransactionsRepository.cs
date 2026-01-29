@@ -82,8 +82,8 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                 try
                 {
                     var sql = @"
-            INSERT INTO Transactions (TransactionId, AccountId, Amount, TransactionType, TransactionDate, Description, ActiveInd)
-            VALUES (@TransactionId, @AccountId, @Amount, @TransactionType, @TransactionDate, @Description, 1)";
+            INSERT INTO Transactions (TransactionId, AccountId, Amount, TransactionType, TransactionDate, CaptureDate, Description, ActiveInd)
+            VALUES (@TransactionId, @AccountId, @Amount, @TransactionType, @TransactionDate, @CaptureDate, @Description, 1)";
 
                     await db.ExecuteAsync(sql, new
                     {
@@ -92,6 +92,7 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                         transaction.Amount,
                         transaction.TransactionType,
                         transaction.TransactionDate,
+                        transaction.CaptureDate,
                         transaction.Description
                     });
                 }
@@ -134,6 +135,7 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                 SET Amount = @Amount,
                     TransactionType = @TransactionType,
                     TransactionDate = @TransactionDate,
+                    CaptureDate = @CaptureDate,
                     Description = @Description
                 WHERE TransactionId = @TransactionId";
 
@@ -143,6 +145,7 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                 transaction.Amount,
                 transaction.TransactionType,
                 transaction.TransactionDate,
+                transaction.CaptureDate,
                 transaction.Description
             });
         }

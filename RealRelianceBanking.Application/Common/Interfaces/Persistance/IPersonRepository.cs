@@ -28,5 +28,7 @@ namespace RealRelianceBanking.Application.Common.Interfaces.Persistance
 
         Task<bool> Update(EditPersonCommand person);
 
+        Task<List<PersonModel>> SearchPersons(int? idNumber, string? lastName, string? accountNumber);
+
     }
 }

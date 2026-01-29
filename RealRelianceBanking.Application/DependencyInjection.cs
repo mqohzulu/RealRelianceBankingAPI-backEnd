@@ -1,5 +1,7 @@
-﻿using MediatR;
+using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using RealRelianceBanking.Application.Common.Behaviors;
 
 namespace RealRelianceBanking.Application
 {
@@ -7,8 +9,12 @@ namespace RealRelianceBanking.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            services.AddMediatR(typeof(DependencyInjection).Assembly);
-            services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+            services.AddMediatR(config =>
+            {
+                config.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+                config.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            });
             return services;
         }
     }
