@@ -12,9 +12,9 @@ namespace RealRelianceBanking.Application
             services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
             services.AddMediatR(config =>
             {
-                config.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
-                config.AddOpenBehavior(typeof(ValidationBehavior<,>));
+                config.RegisterServicesFromAssemblyContaining<DependencyInjection>();
             });
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             return services;
         }
     }
