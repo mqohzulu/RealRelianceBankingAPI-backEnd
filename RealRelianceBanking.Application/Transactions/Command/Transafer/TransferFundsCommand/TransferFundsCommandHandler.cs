@@ -4,9 +4,6 @@ using RealRelianceBanking.Contracts.Transactions.Transafer;
 using RealRelianceBanking.Contracts.Transactions.Transafer.TransferFundsCommand;
 using RealRelianceBanking.Domain.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -27,20 +24,22 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
 
         public async Task<TransferFundsResult> Handle(TransferFundsCommand request, CancellationToken cancellationToken)
         {
-            // Validate input
             if (request.Amount <= 0)
             {
                 return new TransferFundsResult(false, "Transfer amount must be positive and non-zero.");
             }
 
-            // Fetch accounts and person information
+            if (string.IsNullOrWhiteSpace(request.AccountFrom) || string.IsNullOrWhiteSpace(request.AccountTo))
+            {
+                return new TransferFundsResult(false, "Both source and destination account numbers are required.");
+            }
+
             var accountFrom = await _accountRepository.GetByAccountNumber(request.AccountFrom);
             var accountTo = await _accountRepository.GetByAccountNumber(request.AccountTo);
 
-            if (!await _accountRepository.AccountExistsAsync(accountFrom.AccountID) ||
-                !await _accountRepository.AccountExistsAsync(accountTo.AccountID))
+            if (accountFrom == null || accountTo == null)
             {
-                return new TransferFundsResult(false, "One or both accounts do not exist or were created after the transaction date.");
+                return new TransferFundsResult(false, "One or both accounts do not exist.");
             }
 
             if (accountFrom.AccountID == accountTo.AccountID)
@@ -57,7 +56,6 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
             {
                 return new TransferFundsResult(false, "Cannot transfer funds to a closed account.");
             }
-            
 
             var personTo = await _personRepository.GetPersonById(accountTo.PersonID);
             if (personTo == null)
@@ -69,17 +67,20 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
             {
                 return new TransferFundsResult(false, "Insufficient funds in the source account.");
             }
+
+            var currentDate = DateTime.UtcNow;
+            var outgoingDescription = BuildTransferDescription(request.description, $"Transfer to {accountTo.AccountNumber} owned by {personTo.FirstName} {personTo.LastName}");
+            var incomingDescription = BuildTransferDescription(request.description, $"Transfer from {accountFrom.AccountNumber}");
+
             try
             {
-                var currentDate = DateTime.UtcNow;
+                using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
-                // Update account balances
                 accountFrom.Balance -= request.Amount;
                 accountTo.Balance += request.Amount;
                 await _accountRepository.UpdateAccountAsync(accountFrom);
                 await _accountRepository.UpdateAccountAsync(accountTo);
 
-                // Create transaction records
                 var transactionFrom = new TransactionsModel
                 {
                     TransactionId = Guid.NewGuid(),
@@ -87,7 +88,7 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
                     Amount = -request.Amount,
                     TransactionType = "Debit",
                     TransactionDate = currentDate,
-                    Description = $"{request.description}\nTransfer to {accountTo.AccountNumber} owned by {personTo.FirstName} {personTo.LastName}"
+                    Description = outgoingDescription
                 };
 
                 var transactionTo = new TransactionsModel
@@ -97,18 +98,30 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
                     Amount = request.Amount,
                     TransactionType = "Credit",
                     TransactionDate = currentDate,
-                    Description = $"{request.description}\nTransfer from {accountFrom.AccountNumber}"
+                    Description = incomingDescription
                 };
 
                 await _transactionRepository.AddTransaction(transactionFrom);
                 await _transactionRepository.AddTransaction(transactionTo);
 
+                scope.Complete();
+
                 return new TransferFundsResult(true, "Transfer successful.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new TransferFundsResult(false, "Transfer failed due to an unexpected error. Please try again later.");
             }
+        }
+
+        private static string BuildTransferDescription(string description, string details)
+        {
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                return details;
+            }
+
+            return $"{description.Trim()} - {details}";
         }
 
     }
