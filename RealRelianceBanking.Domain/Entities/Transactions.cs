@@ -11,6 +11,7 @@ namespace RealRelianceBanking.Domain.Entities
         public Guid TransactionId { get; set; }
         public Guid AccountId { get; set; }
         public DateTime TransactionDate { get; set; }
+        public DateTime CaptureDate { get; set; }
         public decimal Amount { get; set; }
         public string Description { get; set; }
         public string TransactionType { get; set; }

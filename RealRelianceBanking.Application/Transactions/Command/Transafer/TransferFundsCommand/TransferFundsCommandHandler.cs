@@ -1,9 +1,11 @@
-﻿using MediatR;
+using MediatR;
 using RealRelianceBanking.Application.Common.Interfaces.Persistance;
+using RealRelianceBanking.Application.Common.Interfaces.Services;
 using RealRelianceBanking.Contracts.Transactions.Transafer;
 using RealRelianceBanking.Contracts.Transactions.Transafer.TransferFundsCommand;
 using RealRelianceBanking.Domain.Entities;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -14,12 +16,18 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
         private readonly IAccountRepository _accountRepository;
         private readonly ITransactionRepository _transactionRepository;
         private readonly IPersonRepository _personRepository;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public TransferFundsCommandHandler(IAccountRepository accountRepository, ITransactionRepository transactionRepository, IPersonRepository personRepository)
+        public TransferFundsCommandHandler(
+            IAccountRepository accountRepository,
+            ITransactionRepository transactionRepository,
+            IPersonRepository personRepository,
+            IDateTimeProvider dateTimeProvider)
         {
             _accountRepository = accountRepository;
             _transactionRepository = transactionRepository;
             _personRepository = personRepository;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<TransferFundsResult> Handle(TransferFundsCommand request, CancellationToken cancellationToken)
@@ -47,12 +55,12 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
                 return new TransferFundsResult(false, "Cannot transfer funds to the same account.");
             }
 
-            if (accountFrom.Status == true)
+            if (accountFrom.Status)
             {
                 return new TransferFundsResult(false, "Cannot transfer funds from a closed account.");
             }
 
-            if (accountTo.Status == true)
+            if (accountTo.Status)
             {
                 return new TransferFundsResult(false, "Cannot transfer funds to a closed account.");
             }
@@ -68,7 +76,7 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
                 return new TransferFundsResult(false, "Insufficient funds in the source account.");
             }
 
-            var currentDate = DateTime.UtcNow;
+            var currentDate = _dateTimeProvider.UtcNow;
             var outgoingDescription = BuildTransferDescription(request.description, $"Transfer to {accountTo.AccountNumber} owned by {personTo.FirstName} {personTo.LastName}");
             var incomingDescription = BuildTransferDescription(request.description, $"Transfer from {accountFrom.AccountNumber}");
 
@@ -88,6 +96,7 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
                     Amount = -request.Amount,
                     TransactionType = "Debit",
                     TransactionDate = currentDate,
+                    CaptureDate = currentDate,
                     Description = outgoingDescription
                 };
 
@@ -98,6 +107,7 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
                     Amount = request.Amount,
                     TransactionType = "Credit",
                     TransactionDate = currentDate,
+                    CaptureDate = currentDate,
                     Description = incomingDescription
                 };
 
@@ -123,6 +133,5 @@ namespace RealRelianceBanking.Application.Transactions.Command.Transafer
 
             return $"{description.Trim()} - {details}";
         }
-
     }
- }
+}

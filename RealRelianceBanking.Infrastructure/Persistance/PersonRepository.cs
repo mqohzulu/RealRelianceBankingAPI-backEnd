@@ -293,5 +293,63 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                 return affectedRows > 0;
             }
         }
+
+        public async Task<List<PersonModel>> SearchPersons(int? idNumber, string? lastName, string? accountNumber)
+        {
+            using var db = _context.CreateConnection();
+
+            var sql = @"
+                SELECT
+                    p.PersonID,
+                    p.FirstName,
+                    p.LastName,
+                    p.IdNumber,
+                    p.ActiveInd,
+                    p.Email,
+                    p.PhoneNumber,
+                    p.DateOfBirth,
+
+                    a.AccountId,
+                    a.PersonID,
+                    a.AccountNumber,
+                    a.IsClosed as Status,
+                    a.ActiveInd
+                FROM Person p
+                LEFT JOIN Account a ON a.PersonID = p.PersonID
+                WHERE (@IdNumber IS NULL OR p.IdNumber = @IdNumber)
+                  AND (@LastName IS NULL OR p.LastName LIKE @LastName)
+                  AND (@AccountNumber IS NULL OR a.AccountNumber = @AccountNumber);";
+
+            var lookup = new Dictionary<Guid, PersonModel>();
+
+            await db.QueryAsync<PersonModel, Account, PersonModel>(
+                sql,
+                (person, account) =>
+                {
+                    if (!lookup.TryGetValue(person.PersonID, out var existingPerson))
+                    {
+                        existingPerson = person;
+                        existingPerson.Accounts = new List<Account>();
+                        lookup.Add(existingPerson.PersonID, existingPerson);
+                    }
+
+                    if (account != null)
+                    {
+                        existingPerson.Accounts.Add(account);
+                    }
+
+                    return existingPerson;
+                },
+                new
+                {
+                    IdNumber = idNumber,
+                    LastName = string.IsNullOrWhiteSpace(lastName) ? null : $"%{lastName.Trim()}%",
+                    AccountNumber = string.IsNullOrWhiteSpace(accountNumber) ? null : accountNumber.Trim()
+                },
+                splitOn: "AccountId"
+            );
+
+            return lookup.Values.ToList();
+        }
     }
 }

@@ -7,6 +7,7 @@ using RealRelianceBanking.Contracts.Transactions.Transafer.TransferFundsCommand;
 using RealRelianceBanking.Domain.Aggregates;
 using Microsoft.AspNetCore.Authorization;
 using RealRelianceBanking.Application.Transactions.Command.Update;
+using RealRelianceBanking.Application.Transactions.Command.Create;
 
 namespace RealRelianceBankingAPI.Controllers.Transaction
 {
@@ -39,6 +40,18 @@ namespace RealRelianceBankingAPI.Controllers.Transaction
                 return Ok(result);
             }
             return BadRequest(result);
+        }
+
+        [HttpPost("Create")]
+        public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionCommand command)
+        {
+            var result = await _mediator.Send(command);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result.Message);
         }
 
         [HttpGet("GetTransactions")]
