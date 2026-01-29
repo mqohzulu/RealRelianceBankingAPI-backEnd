@@ -1,13 +1,12 @@
 using System;
-using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using Xunit;
 using RealRelianceBanking.Contracts.Transactions.Transafer.TransferFundsCommand;
 using RealRelianceBanking.Application.Transactions.Command.Transafer;
-using RealRelianceBanking.Domain.Aggregates;
 using RealRelianceBanking.Application.Common.Interfaces.Services;
+using RealRelianceBanking.Domain.Entities;
 namespace Tests.Commands.TransatioinsTests
 {
     public class TransferCommandHandlerTests
