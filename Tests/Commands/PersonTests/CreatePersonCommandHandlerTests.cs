@@ -17,11 +17,13 @@ namespace Tests.Commands.PersonTests
         public async Task Handle_NewPerson_ReturnsSuccessResponse()
         {
             var command = new CreatePersonCommand(
+                Guid.Empty,
                 123456,
                 "Jamie",
                 "Reed",
                 "jamie@example.com",
                 "555-0101",
+                true,
                 new DateTime(1990, 1, 1));
 
             _personRepository.Setup(repo => repo.GetByIdNumberAsync(command.IdNumber))
@@ -48,11 +50,13 @@ namespace Tests.Commands.PersonTests
         public async Task Handle_DuplicateIdNumber_ReturnsFailureResponse()
         {
             var command = new CreatePersonCommand(
+                Guid.Empty,
                 999999,
                 "Alex",
                 "Stone",
                 "alex@example.com",
                 "555-0199",
+                true,
                 new DateTime(1985, 12, 10));
 
             _personRepository.Setup(repo => repo.GetByIdNumberAsync(command.IdNumber))
