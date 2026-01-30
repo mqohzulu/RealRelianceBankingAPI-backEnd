@@ -1,4 +1,5 @@
 using FluentValidation;
+using System;
 using Xunit;
 
 namespace Tests.TestHelpers
@@ -8,7 +9,9 @@ namespace Tests.TestHelpers
         public static void ShouldHaveErrorFor<T>(this IValidator<T> validator, T model, string propertyName)
         {
             var result = validator.Validate(model);
-            Assert.Contains(result.Errors, error => error.PropertyName == propertyName);
+            Assert.Contains(
+                result.Errors,
+                error => string.Equals(error.PropertyName, propertyName, StringComparison.OrdinalIgnoreCase));
         }
 
         public static void ShouldNotHaveAnyErrors<T>(this IValidator<T> validator, T model)

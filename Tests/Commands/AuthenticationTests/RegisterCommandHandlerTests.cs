@@ -1,4 +1,5 @@
 ﻿using RealRelianceBanking.Application.Authentication.Commands.Register;
+using RealRelianceBanking.Application.Authentication.Common;
 using RealRelianceBanking.Application.Common.Errors;
 using RealRelianceBanking.Application.Common.Interfaces.Authentication;
 using System;
@@ -50,11 +51,22 @@ namespace Tests.Commands.AuthenticationTests
                 {
                     user.FirstName = "John";
                     user.LastName = "Doe";
-                });
+                })
+                .Returns(Task.CompletedTask);
 
             var token = "generated_jwt_token";
             _mockJwtTokenGenerator.Setup(generator => generator.GenerateToken(It.IsAny<User>()))
                 .Returns(token);
+
+            var refreshTokenResult = new RefreshTokenResult("refresh-token", DateTime.UtcNow.AddDays(7));
+            _mockJwtTokenGenerator.Setup(generator => generator.GenerateRefreshToken())
+                .Returns(refreshTokenResult);
+
+            _mockUserRepository.Setup(repo => repo.UpdateRefreshToken(
+                    It.IsAny<Guid>(),
+                    refreshTokenResult.Token,
+                    refreshTokenResult.ExpiresAt))
+                .Returns(Task.CompletedTask);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -66,6 +78,8 @@ namespace Tests.Commands.AuthenticationTests
             Assert.Equal(command.Email, result.email);
             Assert.Equal(command.Role, result.role);
             Assert.Equal(token, result.Token);
+            Assert.Equal(refreshTokenResult.Token, result.RefreshToken);
+            Assert.Equal(refreshTokenResult.ExpiresAt, result.RefreshTokenExpires);
 
             _mockUserRepository.Verify(repo => repo.Add(It.Is<User>(u =>
                 u.Email == command.Email &&
@@ -74,6 +88,11 @@ namespace Tests.Commands.AuthenticationTests
             )), Times.Once);
 
             _mockJwtTokenGenerator.Verify(generator => generator.GenerateToken(It.IsAny<User>()), Times.Once);
+            _mockJwtTokenGenerator.Verify(generator => generator.GenerateRefreshToken(), Times.Once);
+            _mockUserRepository.Verify(repo => repo.UpdateRefreshToken(
+                It.IsAny<Guid>(),
+                refreshTokenResult.Token,
+                refreshTokenResult.ExpiresAt), Times.Once);
         }
 
         [Fact]

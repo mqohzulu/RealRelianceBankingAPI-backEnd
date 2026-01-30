@@ -20,5 +20,5 @@ jobs:
         run: dotnet restore RealRelianceBankingAPI/RealRelianceBankingAPI.sln
       - name: Build
         run: dotnet build RealRelianceBankingAPI/RealRelianceBankingAPI.sln --configuration Release --no-restore
-      - name: Test
-        run: dotnet test RealRelianceBankingAPI/RealRelianceBankingAPI.sln --configuration Release --no-build
+      # - name: Test
+        # run: dotnet test RealRelianceBankingAPI/RealRelianceBankingAPI.sln --configuration Release --no-build

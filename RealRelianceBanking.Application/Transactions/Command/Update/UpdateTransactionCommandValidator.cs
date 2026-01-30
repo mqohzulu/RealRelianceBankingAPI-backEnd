@@ -17,7 +17,7 @@ namespace RealRelianceBanking.Application.Transactions.Command.Update
                 .NotEqual(0);
 
             RuleFor(x => x.TransactionDate)
-                .LessThanOrEqualTo(DateTime.UtcNow);
+                .LessThanOrEqualTo(_ => DateTime.UtcNow);
 
             RuleFor(x => x.TransactionType)
                 .Must(type => type.Equals("Debit", StringComparison.OrdinalIgnoreCase)
