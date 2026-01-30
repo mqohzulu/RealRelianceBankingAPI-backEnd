@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Options;
-using RealRelianceBanking.Domain.Entities;
 using RealRelianceBanking.Infrastructure.DBContext;
 using RealRelianceBanking.Infrastructure.Persistance;
 using System;
