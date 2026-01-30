@@ -6,5 +6,12 @@ using System.Threading.Tasks;
 
 namespace RealRelianceBanking.Application.Authentication.Common
 {
-    public record AuthenticationResult(string FirstName, string LastName, string email, string role, string Token);
+    public record AuthenticationResult(
+        string FirstName,
+        string LastName,
+        string email,
+        string role,
+        string Token,
+        string RefreshToken,
+        DateTime RefreshTokenExpires);
 }

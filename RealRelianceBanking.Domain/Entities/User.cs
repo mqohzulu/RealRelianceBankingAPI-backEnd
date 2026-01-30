@@ -14,6 +14,8 @@ namespace RealRelianceBanking.Domain.Entities
         public string Email { get; set; } = null!;
         public string Role { get; set; } = null!;
         public string password { get; set; } = null!;
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpires { get; set; }
 
     }
 }

@@ -10,6 +10,8 @@ namespace RealRelianceBanking.Application.Common.Interfaces.Persistance
     public interface IUserRepository
     {
         Task<User?> GetUserByEmail(string email);
+        Task<User?> GetUserByRefreshToken(string refreshToken);
         Task Add(User user);
+        Task UpdateRefreshToken(Guid userId, string refreshToken, DateTime refreshTokenExpires);
     }
 }

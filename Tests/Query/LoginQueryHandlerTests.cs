@@ -1,11 +1,8 @@
-﻿using RealRelianceBanking.Application.Authentication.Queries.Login;
+using RealRelianceBanking.Application.Authentication.Common;
+using RealRelianceBanking.Application.Authentication.Queries.Login;
 using RealRelianceBanking.Application.Common.Errors;
 using RealRelianceBanking.Application.Common.Interfaces.Authentication;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using RealRelianceBanking.Application.Common.Interfaces.Persistance;
 
 namespace Tests.Query
 {
@@ -29,6 +26,7 @@ namespace Tests.Query
             var query = new LoginQuery("test@example.com", "password123");
             var user = new User
             {
+                Id = Guid.NewGuid(),
                 Email = "test@example.com",
                 password = "password123",
                 FirstName = "John",
@@ -36,11 +34,16 @@ namespace Tests.Query
                 Role = "Customer"
             };
             var token = "generated_jwt_token";
+            var refreshTokenResult = new RefreshTokenResult("refresh_token", DateTime.UtcNow.AddDays(7));
 
             _mockUserRepository.Setup(repo => repo.GetUserByEmail(query.Email))
                 .ReturnsAsync(user);
             _mockJwtTokenGenerator.Setup(generator => generator.GenerateToken(user))
                 .Returns(token);
+            _mockJwtTokenGenerator.Setup(generator => generator.GenerateRefreshToken())
+                .Returns(refreshTokenResult);
+            _mockUserRepository.Setup(repo => repo.UpdateRefreshToken(user.Id, refreshTokenResult.Token, refreshTokenResult.ExpiresAt))
+                .Returns(Task.CompletedTask);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -52,6 +55,7 @@ namespace Tests.Query
             Assert.Equal(user.Email, result.email);
             Assert.Equal(user.Role, result.role);
             Assert.Equal(token, result.Token);
+            Assert.Equal(refreshTokenResult.Token, result.RefreshToken);
         }
 
         [Fact]

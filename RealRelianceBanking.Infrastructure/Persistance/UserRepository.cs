@@ -58,5 +58,48 @@ namespace RealRelianceBanking.Infrastructure.Persistance
                 }
             }
         }
+
+        public async Task<User?> GetUserByRefreshToken(string refreshToken)
+        {
+            using (var db = _context.CreateConnection())
+            {
+                try
+                {
+                    var sql = @"
+                        select * from dbo.Users
+                        WHERE RefreshToken = @RefreshToken";
+
+                    var parameters = new { RefreshToken = refreshToken };
+                    var user = await db.QuerySingleOrDefaultAsync<User>(sql, parameters);
+                    return user;
+                }
+                catch (Exception)
+                {
+                    return new User();
+                }
+            }
+        }
+
+        public async Task UpdateRefreshToken(Guid userId, string refreshToken, DateTime refreshTokenExpires)
+        {
+            using (var db = _context.CreateConnection())
+            {
+                var sql = @"
+                    UPDATE dbo.Users
+                    SET RefreshToken = @RefreshToken,
+                        RefreshTokenExpires = @RefreshTokenExpires,
+                        ModifiedDate = GETDATE()
+                    WHERE UserId = @UserId";
+
+                var parameters = new
+                {
+                    UserId = userId,
+                    RefreshToken = refreshToken,
+                    RefreshTokenExpires = refreshTokenExpires
+                };
+
+                await db.ExecuteAsync(sql, parameters);
+            }
+        }
     }
 }

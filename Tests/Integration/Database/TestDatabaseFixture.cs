@@ -28,6 +28,7 @@ namespace Tests.Integration.Database
         public async Task ResetAsync()
         {
             const string sql = @"
+DELETE FROM Users;
 DELETE FROM Transactions;
 DELETE FROM Account;
 DELETE FROM Person;";
@@ -119,6 +120,37 @@ VALUES (@TransactionId, @AccountId, @Amount, @TransactionType, @TransactionDate,
             return transactionId;
         }
 
+        public async Task<Guid> InsertUserAsync(
+            string email,
+            string password,
+            string firstName,
+            string lastName,
+            string role,
+            string? refreshToken = null,
+            DateTime? refreshTokenExpires = null,
+            bool activeInd = true)
+        {
+            var userId = Guid.NewGuid();
+            const string sql = @"
+INSERT INTO Users (UserId, FirstName, LastName, Email, Password, Role, RefreshToken, RefreshTokenExpires, ActiveInd)
+VALUES (@UserId, @FirstName, @LastName, @Email, @Password, @Role, @RefreshToken, @RefreshTokenExpires, @ActiveInd);";
+
+            await ExecuteAsync(sql, cmd =>
+            {
+                cmd.Parameters.AddWithValue("@UserId", userId);
+                cmd.Parameters.AddWithValue("@FirstName", firstName);
+                cmd.Parameters.AddWithValue("@LastName", lastName);
+                cmd.Parameters.AddWithValue("@Email", email);
+                cmd.Parameters.AddWithValue("@Password", password);
+                cmd.Parameters.AddWithValue("@Role", role);
+                cmd.Parameters.AddWithValue("@RefreshToken", (object?)refreshToken ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@RefreshTokenExpires", (object?)refreshTokenExpires ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ActiveInd", activeInd);
+            });
+
+            return userId;
+        }
+
         private static async Task EnsureDatabaseAsync()
         {
             using var connection = new SqlConnection(MasterConnectionString);
@@ -143,6 +175,21 @@ BEGIN
         PhoneNumber NVARCHAR(15) NULL,
         Address NVARCHAR(255) NULL,
         DateOfBirth DATE NULL,
+        ActiveInd BIT NOT NULL DEFAULT 1
+    );
+END;
+
+IF OBJECT_ID('dbo.Users', 'U') IS NULL
+BEGIN
+    CREATE TABLE Users (
+        UserId UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+        FirstName NVARCHAR(100) NOT NULL,
+        LastName NVARCHAR(100) NOT NULL,
+        Email NVARCHAR(100) NOT NULL UNIQUE,
+        Password NVARCHAR(100) NOT NULL,
+        Role NVARCHAR(50) NOT NULL,
+        RefreshToken NVARCHAR(512) NULL,
+        RefreshTokenExpires DATETIME2 NULL,
         ActiveInd BIT NOT NULL DEFAULT 1
     );
 END;

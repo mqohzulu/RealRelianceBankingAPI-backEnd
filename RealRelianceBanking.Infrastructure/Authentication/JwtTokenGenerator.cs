@@ -1,15 +1,14 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using RealRelianceBanking.Application.Authentication.Common;
 using RealRelianceBanking.Application.Common.Interfaces.Authentication;
 using RealRelianceBanking.Application.Common.Interfaces.Services;
 using RealRelianceBanking.Domain.Entities;
-using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace RealRelianceBanking.Infrastructure.Authentication
 {
@@ -43,14 +42,26 @@ namespace RealRelianceBanking.Infrastructure.Authentication
             };
             claims.Add(new Claim(ClaimTypes.Role, user.Role));
 
+            var expiryMinutes = _jwtSettings.ExpiryMinutes > 0
+                ? _jwtSettings.ExpiryMinutes
+                : _jwtSettings.ExpiryInMinutes;
+
             var securityToken = new JwtSecurityToken(
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
-                expires: _dateTimeProvider.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
+                expires: _dateTimeProvider.UtcNow.AddMinutes(expiryMinutes),
                 claims: claims,
                 signingCredentials: signingCredentials);
 
             return new JwtSecurityTokenHandler().WriteToken(securityToken);
+        }
+
+        public RefreshTokenResult GenerateRefreshToken()
+        {
+            var tokenBytes = RandomNumberGenerator.GetBytes(64);
+            var refreshToken = Convert.ToBase64String(tokenBytes);
+            var expiresAt = _dateTimeProvider.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays);
+            return new RefreshTokenResult(refreshToken, expiresAt);
         }
 
     }

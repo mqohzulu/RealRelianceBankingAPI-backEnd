@@ -45,10 +45,14 @@ namespace RealRelianceBanking.Application.Authentication.Commands.Register
             await _userRepository.Add(user);
 
             var token = _jwtTokenGenerator.GenerateToken(user);
+            var refreshTokenResult = _jwtTokenGenerator.GenerateRefreshToken();
+            await _userRepository.UpdateRefreshToken(user.Id, refreshTokenResult.Token, refreshTokenResult.ExpiresAt);
 
             return new AuthenticationResult(
                 user.FirstName, user.LastName, user.Email, user.Role,
-                token);
+                token,
+                refreshTokenResult.Token,
+                refreshTokenResult.ExpiresAt);
         }
     }
 }

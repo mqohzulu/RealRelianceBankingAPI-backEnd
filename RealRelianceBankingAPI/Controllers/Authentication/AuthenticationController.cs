@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RealRelianceBanking.Application.Authentication.Commands.RefreshToken;
 using RealRelianceBanking.Application.Authentication.Commands.Register;
 using RealRelianceBanking.Application.Authentication.Queries.Login;
 using RealRelianceBanking.Application.Common.Errors;
@@ -55,6 +56,24 @@ namespace RealRelianceBankingAPI.Controllers.Authentication
             {
                 // Log the exception
                 return StatusCode(500, new { message = "An error occurred while processing your request." });
+            }
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenCommand request)
+        {
+            try
+            {
+                var result = await _mediator.Send(request);
+                return Ok(result);
+            }
+            catch (InvalidRefreshToken)
+            {
+                return Unauthorized(new { message = "Invalid refresh token." });
+            }
+            catch (RefreshTokenExpired)
+            {
+                return Unauthorized(new { message = "Refresh token expired." });
             }
         }
     }
