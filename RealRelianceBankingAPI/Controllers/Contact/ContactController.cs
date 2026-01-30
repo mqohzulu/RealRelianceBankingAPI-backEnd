@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using RealRelianceBanking.Application.Contact.Commands;
@@ -6,7 +7,8 @@ using RealRelianceBanking.Application.Contact.Commands;
 namespace RealRelianceBankingAPI.Controllers.Contact
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class ContactController : ControllerBase
     {
         private readonly IMediator _mediator;

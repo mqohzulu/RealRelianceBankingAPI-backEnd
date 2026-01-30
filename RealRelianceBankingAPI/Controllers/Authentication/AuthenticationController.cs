@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RealRelianceBanking.Application.Authentication.Commands.RefreshToken;
@@ -8,7 +9,8 @@ using RealRelianceBanking.Application.Common.Errors;
 
 namespace RealRelianceBankingAPI.Controllers.Authentication
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     [AllowAnonymous]
     public class AuthenticationController : ControllerBase

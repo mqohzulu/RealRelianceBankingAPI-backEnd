@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using RealRelianceBanking.Application.Transactions.Queries.GetAccountTransactions;
 using RealRelianceBanking.Application.Transactions.Queries.GetTransactions;
@@ -11,7 +12,8 @@ using RealRelianceBanking.Application.Transactions.Command.Create;
 
 namespace RealRelianceBankingAPI.Controllers.Transaction
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     [Authorize]
     public class TransactionController : ControllerBase
