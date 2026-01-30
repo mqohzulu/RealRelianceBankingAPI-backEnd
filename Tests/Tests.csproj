@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation.TestHelper" Version="11.9.0" />
+    <PackageReference Include="FluentValidation" Version="11.10.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.20" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />

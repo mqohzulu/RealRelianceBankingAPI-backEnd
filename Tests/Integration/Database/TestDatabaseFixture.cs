@@ -190,6 +190,7 @@ BEGIN
         Role NVARCHAR(50) NOT NULL,
         RefreshToken NVARCHAR(512) NULL,
         RefreshTokenExpires DATETIME2 NULL,
+        ModifiedDate DATETIME2 NULL,
         ActiveInd BIT NOT NULL DEFAULT 1
     );
 END;
